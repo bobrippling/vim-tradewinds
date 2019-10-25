@@ -21,6 +21,39 @@ function! tradewinds#softmove(dir) abort
   return exists('*win_splitmove') ? s:newimpl(a:dir) : s:oldimpl(a:dir)
 endfunction
 
+function! s:splitkind()
+  " try to place the new window in the natural position
+  " - if the current window is at least as big as the target then
+  "   compare the cursor position and the midpoint of the target window
+  " - if the current window is smaller than the target
+  "   then compare the midpoints of the current and target windows
+  if a:dir ==# 'h' || a:dir ==# 'l'
+    if l:pos[0] +
+          \ (winheight(0) >= winheight(target)
+          \   ? winline()-1 : winheight(0) / 2)
+          \ <= l:targetpos[0] + winheight(target) / 2
+      let l:vertical = 0
+      let l:rightbelow = 0
+    else
+      let l:vertical = 0
+      let l:rightbelow = 1
+    endif
+  else
+    if l:pos[1] +
+          \ (winwidth(0) >= winwidth(target)
+          \   ? wincol()-1 : winwidth(0) / 2)
+          \ <= l:targetpos[1] + winwidth(target) / 2
+      let l:vertical = 1
+      let l:rightbelow = 0
+    else
+      let l:vertical = 1
+      let l:rightbelow = 1
+    endif
+  endif
+
+  return [l:vertical, l:rightbelow]
+endfunction
+
 function! s:newimpl(dir) abort
   let l:pos = tradewinds#winindir#win_screenpos(0)
   let l:target = winnr(a:dir)
@@ -42,30 +75,8 @@ function! s:newimpl(dir) abort
   let l:targetid = win_getid(l:target)
   let l:targetpos = tradewinds#winindir#win_screenpos(l:target)
 
-  " try to place the new window in the natural position
-  " - if the current window is at least as big as the target then
-  "   compare the cursor position and the midpoint of the target window
-  " - if the current window is smaller than the target
-  "   then compare the midpoints of the current and target windows
-  if a:dir ==# 'h' || a:dir ==# 'l'
-    if l:pos[0] +
-          \ (winheight(0) >= winheight(target)
-          \   ? winline()-1 : winheight(0) / 2)
-          \ <= l:targetpos[0] + winheight(target) / 2
-      let l:flags = { 'rightbelow': 0 }
-    else
-      let l:flags = { 'rightbelow': 1 }
-    endif
-  else
-    if l:pos[1] +
-          \ (winwidth(0) >= winwidth(target)
-          \   ? wincol()-1 : winwidth(0) / 2)
-          \ <= l:targetpos[1] + winwidth(target) / 2
-      let l:flags = { 'rightbelow': 0, 'vertical': 1 }
-    else
-      let l:flags = { 'rightbelow': 1, 'vertical': 1 }
-    endif
-  endif
+  let [l:vertical, l:rightbelow] = s:splitkind()
+  let l:flags = { 'rightbelow': l:rightbelow, 'vertical': l:vertical }
 
   call win_splitmove(winnr(), l:target, l:flags)
 
@@ -108,32 +119,8 @@ function! s:oldimpl(dir) abort
 
   let l:targetid = win_getid(l:target)
   let l:targetpos = tradewinds#winindir#win_screenpos(l:target)
-  let l:flags = ''
-
-  " try to place the new window in the natural position
-  " - if the current window is at least as big as the target then
-  "   compare the cursor position and the midpoint of the target window
-  " - if the current window is smaller than the target
-  "   then compare the midpoints of the current and target windows
-  if a:dir ==# 'h' || a:dir ==# 'l'
-    if l:pos[0] +
-          \ (winheight(0) >= winheight(target)
-          \   ? winline()-1 : winheight(0) / 2)
-          \ <= l:targetpos[0] + winheight(target) / 2
-      let l:flags = 'leftabove'
-    else
-      let l:flags = 'rightbelow'
-    endif
-  else
-    if l:pos[1] +
-          \ (winwidth(0) >= winwidth(target)
-          \   ? wincol()-1 : winwidth(0) / 2)
-          \ <= l:targetpos[1] + winwidth(target) / 2
-      let l:flags = 'leftabove vertical'
-    else
-      let l:flags = 'rightbelow vertical'
-    endif
-  endif
+  let [l:vertical, l:rightbelow] = s:splitkind()
+  let l:flags = (l:rightbelow ? "rightbelow" : "leftabove") . " " . (l:vertical ? "vertical " : "")
 
   " go to the target window
   call win_gotoid(l:targetid)
