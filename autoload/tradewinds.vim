@@ -31,7 +31,7 @@ function! s:splitkind()
     if l:pos[0] +
           \ (winheight(0) >= winheight(target)
           \   ? winline()-1 : winheight(0) / 2)
-          \ <= l:targetpos[0] + winheight(target) / 2
+          \ <= a:targetpos[0] + winheight(target) / 2
       let l:vertical = 0
       let l:rightbelow = 0
     else
@@ -42,7 +42,7 @@ function! s:splitkind()
     if l:pos[1] +
           \ (winwidth(0) >= winwidth(target)
           \   ? wincol()-1 : winwidth(0) / 2)
-          \ <= l:targetpos[1] + winwidth(target) / 2
+          \ <= a:targetpos[1] + winwidth(target) / 2
       let l:vertical = 1
       let l:rightbelow = 0
     else
