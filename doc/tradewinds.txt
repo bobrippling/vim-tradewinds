@@ -205,7 +205,12 @@ After a window move is performed, trade winds fires the `User` autocmd
 statuslines or other window properties:
 >
     autocmd User TradeWindsAfterVoyage call DoSomething()
-<
+
+==============================================================================
+SPLIT DIRECTION                                    *tradewinds-split-direction*
+
+TODO
+
 ==============================================================================
 CAVEATS                                                    *tradewinds-caveats*
 

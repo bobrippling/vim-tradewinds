@@ -146,6 +146,26 @@ statuslines or other window properties:
 
     autocmd User TradeWindsAfterVoyage call DoSomething()
 
+## Window Split Direction
+
+By default, trade winds will split your target window based on where the source
+window is coming from, for example
+
+    +--------+-------------+------+           +--------------+--------------+
+    |        |             |      |           |              |              |
+    |        |             |      |           |              |              |
+    |        | current win |      |           |              |              |
+    |        |             |      | ctrl-w gj |              |              |
+    |        |             |      |           |              |              |
+    |--------+-------------+------|           |--------------+--------------|
+    |                             | +-------> |              |              |
+    |                             |           | current win  |              |
+    |                             |           |              |              |
+    +-----------------------------+           +--------------+--------------+
+
+
+we may want to rely on vim's `'splitbelow'` and `'splitright'`
+
 ## Caveats
 
 The windows are not actually moving.  Instead, a new window is created

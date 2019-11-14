@@ -21,7 +21,11 @@ function! tradewinds#softmove(dir) abort
   return exists('*win_splitmove') ? s:newimpl(a:dir) : s:oldimpl(a:dir)
 endfunction
 
-function! s:splitkind()
+function! s:splitkind(vert, novert, rightbelow, norightbelow)
+  if get(g:, 'tradewinds_native_split', 0)
+    return [v:null, v:null]
+  endif
+
   " try to place the new window in the natural position
   " - if the current window is at least as big as the target then
   "   compare the cursor position and the midpoint of the target window
@@ -51,7 +55,10 @@ function! s:splitkind()
     endif
   endif
 
-  return [l:vertical, l:rightbelow]
+  return [
+  \ l:vertical ? a:vert : a:novert,
+  \ l:rightbelow ? a:rightbelow : a:norightbelow,
+  \ ]
 endfunction
 
 function! s:newimpl(dir) abort
@@ -75,8 +82,14 @@ function! s:newimpl(dir) abort
   let l:targetid = win_getid(l:target)
   let l:targetpos = tradewinds#winindir#win_screenpos(l:target)
 
-  let [l:vertical, l:rightbelow] = s:splitkind()
-  let l:flags = { 'rightbelow': l:rightbelow, 'vertical': l:vertical }
+  let [l:vertical, l:rightbelow] = s:splitkind(1, 0, 1, 0)
+  let l:flags = {}
+  if l:vertical != v:null
+    let l:flags.vertical = l:vertical 
+  endif
+  if l:rightbelow != v:null
+    let l:flags.rightbelow = l:rightbelow 
+  endif
 
   call win_splitmove(winnr(), l:target, l:flags)
 
@@ -119,8 +132,8 @@ function! s:oldimpl(dir) abort
 
   let l:targetid = win_getid(l:target)
   let l:targetpos = tradewinds#winindir#win_screenpos(l:target)
-  let [l:vertical, l:rightbelow] = s:splitkind()
-  let l:flags = (l:rightbelow ? "rightbelow" : "leftabove") . " " . (l:vertical ? "vertical " : "")
+  let [l:vertical, l:rightbelow] = s:splitkind('rightbelow', 'leftabove', 'vertical', '')
+  let l:flags = l:rightbelow . " " . l:vertical
 
   " go to the target window
   call win_gotoid(l:targetid)
